@@ -51,7 +51,7 @@ Backend Setup (Django)
 
 Clone the repository:
 
-git clone https://github.com/yourusername/holiday-explorer.git
+git clone https://github.com/binu1515/Holiday-management-app.git
 cd holiday-explorer/backend
 
 Create and activate a virtual environment:

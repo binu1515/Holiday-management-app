@@ -36,7 +36,7 @@ class HolidayAPI(APIView):
         
                 if response.status_code == 200:
                     data = response.json()
-                    cache.set(cache_key, data, timeout=2)  # Cache for 24 hours (86400 sec)
+                    cache.set(cache_key, data, timeout=86400)  # Cache for 24 hours (86400 sec)
                     return Response(data, status=status.HTTP_200_OK)
             except requests.exceptions.RequestException as e:
                 print(f"Attempt {attempt + 1} failed: {e}")

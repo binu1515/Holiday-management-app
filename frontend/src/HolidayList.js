@@ -7,11 +7,13 @@ function HolidayList() {
   const [year, setYear] = useState("2024");
   const [holidays, setHolidays] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false); // New Loading State
   const holidaysPerPage = 10;
   const navigate = useNavigate();
 
   // Fetch Holidays API
   const fetchHolidays = async () => {
+    setLoading(true); // Start loading
     try {
       const response = await axios.get("http://127.0.0.1:8000/api/", {
         params: { country, year },
@@ -21,6 +23,7 @@ function HolidayList() {
     } catch (error) {
       console.error("Error fetching holidays:", error);
     }
+    setLoading(false); // Stop loading
   };
 
   // Pagination Logic
@@ -38,6 +41,7 @@ function HolidayList() {
           value={country}
           onChange={(e) => setCountry(e.target.value)}
           className="border p-2 rounded"
+          disabled={loading} // Disable input while loading
         />
         <input
           type="text"
@@ -45,14 +49,25 @@ function HolidayList() {
           value={year}
           onChange={(e) => setYear(e.target.value)}
           className="border p-2 rounded"
+          disabled={loading} // Disable input while loading
         />
-        <button onClick={fetchHolidays} className="bg-blue-500 text-white px-4 py-2 rounded">
-          Search
+        <button
+          onClick={fetchHolidays}
+          className={`px-4 py-2 rounded ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 text-white"}`}
+          disabled={loading}
+        >
+          {loading ? (
+            <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-5 h-5 inline-block"></span>
+          ) : (
+            "Search"
+          )}
         </button>
       </div>
 
       {/* Display Holidays */}
-      {currentHolidays.length > 0 ? (
+      {loading ? (
+        <p className="text-center text-lg">Fetching holidays...</p>
+      ) : currentHolidays.length > 0 ? (
         <>
           <ul className="bg-white p-4 rounded shadow-md">
             {currentHolidays.map((holiday, index) => (
@@ -70,18 +85,26 @@ function HolidayList() {
           <div className="flex justify-between mt-4">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className={`px-4 py-2 rounded ${currentPage === 1 ? "bg-gray-300" : "bg-blue-500 text-white"}`}
+              disabled={loading || currentPage === 1}
+              className={`px-4 py-2 rounded ${loading || currentPage === 1 ? "bg-gray-300" : "bg-blue-500 text-white"}`}
             >
-              Previous
+              {loading ? (
+                <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-5 h-5 inline-block"></span>
+              ) : (
+                "Previous"
+              )}
             </button>
             <span className="px-4 py-2">Page {currentPage}</span>
             <button
               onClick={() => setCurrentPage((prev) => (indexOfLastHoliday < holidays.length ? prev + 1 : prev))}
-              disabled={indexOfLastHoliday >= holidays.length}
-              className={`px-4 py-2 rounded ${indexOfLastHoliday >= holidays.length ? "bg-gray-300" : "bg-blue-500 text-white"}`}
+              disabled={loading || indexOfLastHoliday >= holidays.length}
+              className={`px-4 py-2 rounded ${loading || indexOfLastHoliday >= holidays.length ? "bg-gray-300" : "bg-blue-500 text-white"}`}
             >
-              Next
+              {loading ? (
+                <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-5 h-5 inline-block"></span>
+              ) : (
+                "Next"
+              )}
             </button>
           </div>
         </>

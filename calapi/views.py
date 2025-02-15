@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 from dotenv import load_dotenv
 from django.core.cache import cache  # Import caching
@@ -29,11 +30,15 @@ class HolidayAPI(APIView):
         # If not cached, fetch data from API
         url = f"https://calendarific.com/api/v2/holidays?api_key={CALENDARIFIC_API_KEY}&country={country}&year={year}"
         print(f"Requesting: {url}")  # Debug log
-        response = requests.get(url)
+        for attempt in range(3):
+            try:
+                response = requests.get(url, timeout=10)
         
-        if response.status_code == 200:
-            data = response.json()
-            cache.set(cache_key, data, timeout=2)  # Cache for 24 hours (86400 sec)
-            return Response(data, status=status.HTTP_200_OK)
-        else:
-            return Response({"error": "Failed to fetch holidays", "status": response.status_code}, status=response.status_code)
+                if response.status_code == 200:
+                    data = response.json()
+                    cache.set(cache_key, data, timeout=2)  # Cache for 24 hours (86400 sec)
+                    return Response(data, status=status.HTTP_200_OK)
+            except requests.exceptions.RequestException as e:
+                print(f"Attempt {attempt + 1} failed: {e}")
+                time.sleep(2)  #retrying time
+        return Response({"error": "Failed to fetch holidays", "status": response.status_code}, status=response.status_code)
